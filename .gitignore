@@ -1,0 +1,5 @@
+.idea
+.vs
+.DS_Store
+build*
+out
