@@ -49,7 +49,9 @@ void Game::load_assets() {
     loadimage(&bodybg, _T("./assets/ballonscreen/bodybg.png"));
     loadimage(&balloonlines, _T("./assets/ballonscreen/balloonlines.png"));
     loadimage(&bomb, _T("./assets/ballonscreen/bomb.png"));
-    loadimage(&line, _T("./assets/ballonscreen/line.png"));
+    loadimage(&line[0], _T("./assets/ballonscreen/line.png"));
+    rotateimage(&line[1], &line[0], 0.25 * M_PI, BLACK, true, true);
+    rotateimage(&line[2], &line[0], 0.75 * M_PI, BLACK, true, true);
     loadimage(&panel[0], _T("./assets/ballonscreen/panel1.png"));
     loadimage(&panel[1], _T("./assets/ballonscreen/panel2.png"));
     loadimage(&panel[2], _T("./assets/ballonscreen/panel3.png"));
@@ -114,6 +116,7 @@ void Game::spawn_level() {
     this->game_window_canvas = level_canvas_bk;
     update_window();
     mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
+    detect_mouse_press_message();
 }
 
 void inline Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end) {
@@ -169,8 +172,8 @@ void Game::level_generator() {
             i = 0;
             starter_position[0] = rand() % 5;
             starter_position[1] = rand() % 9;
-            for (int j = 0; j < 9; i++) {
-                for (int k = 0; k < 5; j++) {
+            for (int j = 0; j < 9; j++) {
+                for (int k = 0; k < 5; k++) {
                     level_map[level - 1][j][k] = -1;
                 }
             }
@@ -313,7 +316,6 @@ void Game::put_balloon_image(const int position_x, const int position_y, const i
 }
 
 void Game::detect_mouse_press_message() {
-
 }
 
 void inline Game::mouse_left_button_press(const int x_start, const int y_start, const int x_end, const int y_end) {
@@ -322,4 +324,44 @@ void inline Game::mouse_left_button_press(const int x_start, const int y_start, 
 
 void inline Game::mouse_left_button_press(const int x_start, const int y_start, const int x_end, const int y_end, const DWORD time_interval) {
 
+}
+
+void Game::put_line_image(int line_direction, int position_x, int position_y) {
+    switch (line_direction) {
+        using namespace Roadmap_direction;
+        case LINE_DOWN_LEFT:
+            position_x -= 1;
+            position_y += 1;
+        case LINE_UP_RIGHT:
+            if (position_y % 2) {
+                put_image((int) (panel_base_x[1] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[1] + ((double) (position_y + 1) / 2 - 1) * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10 - (double) line[1].getheight() / 2),
+                          &line[1],
+                          BLACK);
+            } else {
+                put_image((int) (panel_base_x[0] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[0] + (double) position_y / 2 * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10 - (double) line[1].getheight() / 2),
+                          &line[1],
+                          BLACK);
+            }
+            break;
+        case LINE_UP_LEFT:
+            position_x -= 1;
+            position_y -= 1;
+        case LINE_DOWN_RIGHT:
+            if (position_y % 2) {
+                put_image((int) (panel_base_x[1] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[1] + ((double) (position_y + 1) / 2 - 1) * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10),
+                          &line[2],
+                          BLACK);
+            } else {
+                put_image((int) (panel_base_x[0] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[0] + (double) position_y / 2 * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10),
+                          &line[2],
+                          BLACK);
+            }
+            break;
+        default:
+            break;
+    }
 }

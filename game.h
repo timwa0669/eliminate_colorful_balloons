@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#define _USE_MATH_DEFINES
 
 #include <easyx.h>
 #include <cstdint>
@@ -10,6 +11,7 @@
 #include <ctime>
 #include <cstring>
 #include <cstdlib>
+#include <cmath>
 
 namespace Roadmap_direction {
     /*
@@ -25,6 +27,13 @@ namespace Roadmap_direction {
     const int EVEN_UP_RIGHT[2] = {1, -1};
     const int EVEN_DOWN_LEFT[2] = {0, 1};
     const int EVEN_DOWN_RIGHT[2] = {1, 1};
+
+    enum {
+        LINE_UP_RIGHT = 0,
+        LINE_DOWN_LEFT,
+        LINE_DOWN_RIGHT,
+        LINE_UP_LEFT
+    };
 }
 
 class Game {
@@ -84,7 +93,7 @@ public:
 private:
     IMAGE
             game_window_canvas,
-            menubtn, balloon[7], balloon1[7], balloonlines, balloonpanel, balloonsub, bodybg, bomb, line, panel[7], star1, star2, status,
+            menubtn, balloon[7], balloon1[7], balloonlines, balloonpanel, balloonsub, bodybg, bomb, line[3], panel[7], star1, star2, status,
             donebtn, exit, nextbtn, playbtn, prev, resetbtn, setting,
             introbg,
             bg[3], sidepanel;
@@ -118,4 +127,6 @@ private:
     void put_balloon_image(int position_x, int position_y, int color_id);
 
     void detect_mouse_press_message();
+
+    void put_line_image(int line_direction, int position_x, int position_y);
 };
