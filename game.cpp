@@ -115,13 +115,22 @@ void Game::spawn_level() {
     mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
     this->game_window_canvas = level_canvas_bk;
     update_window();
-    mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
-    detect_mouse_press_message();
+    mouse_left_button_press_event();
 }
 
 void inline Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end) {
-    for (MOUSEMSG mouse_event = GetMouseMsg(); ;mouse_event = GetMouseMsg()) {
+    MOUSEMSG mouse_event = GetMouseMsg();
+    for (; ;mouse_event = GetMouseMsg()) {
         if (mouse_event.uMsg == WM_LBUTTONDOWN &&
+            mouse_event.x >= x_start &&
+            mouse_event.x <= x_end &&
+            mouse_event.y >= y_start &&
+            mouse_event.y <= y_end) {
+            break;
+        }
+    }
+    for (; ;mouse_event = GetMouseMsg()) {
+        if (mouse_event.uMsg == WM_LBUTTONUP &&
             mouse_event.x >= x_start &&
             mouse_event.x <= x_end &&
             mouse_event.y >= y_start &&
@@ -132,7 +141,8 @@ void inline Game::mouse_click(const int x_start, const int y_start, const int x_
 }
 
 void inline Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end, const DWORD time_interval) {
-    for (MOUSEMSG mouse_event = GetMouseMsg(); ;Sleep(time_interval), mouse_event = GetMouseMsg()) {
+    MOUSEMSG mouse_event = GetMouseMsg();
+    for (; ;Sleep(time_interval), mouse_event = GetMouseMsg()) {
         if (mouse_event.uMsg == WM_LBUTTONDOWN &&
             mouse_event.x >= x_start &&
             mouse_event.x <= x_end &&
@@ -141,6 +151,16 @@ void inline Game::mouse_click(const int x_start, const int y_start, const int x_
             break;
         }
     }
+    for (; ;Sleep(time_interval), mouse_event = GetMouseMsg()) {
+        if (mouse_event.uMsg == WM_LBUTTONUP &&
+            mouse_event.x >= x_start &&
+            mouse_event.x <= x_end &&
+            mouse_event.y >= y_start &&
+            mouse_event.y <= y_end) {
+            break;
+        }
+    }
+
 }
 
 void Game::level_generator() {
@@ -149,8 +169,6 @@ void Game::level_generator() {
     put_image(0, 0, &bg[2], BLACK);
     balloon_color_id = rand() % 7;
     put_balloonpanel_image();
-    int balloonpanel_clickable_width = balloonpanel.getwidth() / 2;
-    int balloonpanel_clickable_height = balloonpanel.getheight() / 2;
     int starter_position[2] = {
             rand() % 5,
             rand() % 9
@@ -182,28 +200,28 @@ void Game::level_generator() {
         if (starter_position[1] % 2 == 0) {
             switch (direction) {
                 case 0:
-                    if (generate_necessary_balloons(starter_position, ODD_UP_LEFT)) {
+                    if (generate_essential_balloons(starter_position, ODD_UP_LEFT)) {
                         i++;
                         continue;
                     }
                     position_false[0] = true;
                     break;
                 case 1:
-                    if (generate_necessary_balloons(starter_position, ODD_UP_RIGHT)) {
+                    if (generate_essential_balloons(starter_position, ODD_UP_RIGHT)) {
                         i++;
                         continue;
                     }
                     position_false[1] = true;
                     break;
                 case 2:
-                    if (generate_necessary_balloons(starter_position, ODD_DOWN_LEFT)) {
+                    if (generate_essential_balloons(starter_position, ODD_DOWN_LEFT)) {
                         i++;
                         continue;
                     }
                     position_false[2] = true;
                     break;
                 case 3:
-                    if (generate_necessary_balloons(starter_position, ODD_DOWN_RIGHT)) {
+                    if (generate_essential_balloons(starter_position, ODD_DOWN_RIGHT)) {
                         i++;
                         continue;
                     }
@@ -215,28 +233,28 @@ void Game::level_generator() {
         } else {
             switch (direction) {
                 case 0:
-                    if (generate_necessary_balloons(starter_position, EVEN_UP_LEFT)) {
+                    if (generate_essential_balloons(starter_position, EVEN_UP_LEFT)) {
                         i++;
                         continue;
                     }
                     position_false[0] = true;
                     break;
                 case 1:
-                    if (generate_necessary_balloons(starter_position, EVEN_UP_RIGHT)) {
+                    if (generate_essential_balloons(starter_position, EVEN_UP_RIGHT)) {
                         i++;
                         continue;
                     }
                     position_false[1] = true;
                     break;
                 case 2:
-                    if (generate_necessary_balloons(starter_position, EVEN_DOWN_LEFT)) {
+                    if (generate_essential_balloons(starter_position, EVEN_DOWN_LEFT)) {
                         i++;
                         continue;
                     }
                     position_false[2] = true;
                     break;
                 case 3:
-                    if (generate_necessary_balloons(starter_position, EVEN_DOWN_RIGHT)) {
+                    if (generate_essential_balloons(starter_position, EVEN_DOWN_RIGHT)) {
                         i++;
                         continue;
                     }
@@ -258,7 +276,7 @@ void Game::level_generator() {
     }
 }
 
-bool inline Game::generate_necessary_balloons(int (&src_position)[2], const int (&delta_position)[2]) {
+bool inline Game::generate_essential_balloons(int (&src_position)[2], const int (&delta_position)[2]) {
     int next_position[2] = {
             src_position[0] + delta_position[0],
             src_position[1] + delta_position[1]
@@ -315,14 +333,11 @@ void Game::put_balloon_image(const int position_x, const int position_y, const i
     }
 }
 
-void Game::detect_mouse_press_message() {
-}
-
-void inline Game::mouse_left_button_press(const int x_start, const int y_start, const int x_end, const int y_end) {
+void Game::update_selected_balloon() {
 
 }
 
-void inline Game::mouse_left_button_press(const int x_start, const int y_start, const int x_end, const int y_end, const DWORD time_interval) {
+void Game::mouse_left_button_press_event() {
 
 }
 

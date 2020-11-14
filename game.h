@@ -88,6 +88,8 @@ public:
 
     int level_map[1][9][5] = {};
 
+    int level_map_press_area[1][9][5][2] = {};
+
     int balloon_color_id = -1;
 
 private:
@@ -114,19 +116,17 @@ private:
 
     void inline mouse_click(int x_start, int y_start, int x_end, int y_end, DWORD time_interval);
 
-    void inline mouse_left_button_press(int x_start, int y_start, int x_end, int y_end);
-
-    void inline mouse_left_button_press(int x_start, int y_start, int x_end, int y_end, DWORD time_interval);
-
     void level_generator();
 
-    bool inline generate_necessary_balloons(int (&src_position)[2], const int (&delta_position)[2]);
+    bool inline generate_essential_balloons(int (&src_position)[2], const int (&delta_position)[2]);
 
     void put_balloonpanel_image();
 
     void put_balloon_image(int position_x, int position_y, int color_id);
 
-    void detect_mouse_press_message();
-
     void put_line_image(int line_direction, int position_x, int position_y);
+
+    void update_selected_balloon();
+
+    void inline mouse_left_button_press_event();
 };
