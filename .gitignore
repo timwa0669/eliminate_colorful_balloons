@@ -2,4 +2,6 @@
 .vs
 .DS_Store
 build*
+cmake*
 out
+CMakeSettings.json

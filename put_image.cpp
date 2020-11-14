@@ -116,8 +116,6 @@ void Game::put_image(IMAGE *pDstImg,
                      int srcHeight) {
     HDC dstDC = GetImageHDC(pDstImg);
     HDC srcDC = GetImageHDC(pSrcImg);
-    int w = pSrcImg->getwidth();
-    int h = pSrcImg->getheight();
 
     StretchBlt(dstDC, dstX, dstY, dstWidth, dstHeight, srcDC, srcX, srcY, srcWidth, srcHeight, SRCCOPY);
 }

@@ -10,9 +10,20 @@ Game::Game(const int argc, const char **argv) {
     setorigin(0, 0);
     Resize(&this->game_window_canvas, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
     SetWorkingImage(&this->game_window_canvas);
-    rand_generator.seed(time(nullptr));
+    srand(time(nullptr));
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 5; j++) {
+            level_map[level - 1][i][j] = -1;
+        }
+    }
     cleardevice();
     load_assets();
+    balloonpanel_width = balloonpanel.getwidth() + panel_offset;
+    balloonpanel_height = balloonpanel.getheight() + panel_offset;
+    panel_base_x[0] = (double) GAME_WINDOW_CENTER_X - 2.5 * balloonpanel_width;
+    panel_base_x[1] = (double) GAME_WINDOW_CENTER_X - 2 * balloonpanel_width;
+    panel_base_y[0] = (double) GAME_WINDOW_CENTER_Y - 2.5 * balloonpanel_height;
+    panel_base_y[1] = (double) GAME_WINDOW_CENTER_Y - 2 * balloonpanel_height;
     spawn_title();
 }
 
@@ -71,7 +82,7 @@ void Game::spawn_title() {
     put_image(playbtn_x_start, playbtn_y_start, &playbtn, BLACK);
     update_window();
     mouse_click(playbtn_x_start, playbtn_y_start, playbtn_x_start + playbtn.getwidth(), playbtn_y_start + playbtn.getheight());
-    spawn_level(1);
+    spawn_level();
 }
 
 Game::~Game() {
@@ -90,13 +101,8 @@ void Game::clear_canvas() {
     game_window_canvas = new_img;
 }
 
-void Game::spawn_level(const int level) {
-    clear_canvas();
-    put_image(0, 0, &bg[0]);
-    put_image(0, 0, &bg[2], BLACK);
-    std::uniform_int_distribution<int> balloon_rand_distribution(0, 6);
-    int balloon_color_id = balloon_rand_distribution(rand_generator);
-    level_generator(level, balloon_color_id);
+void Game::spawn_level() {
+    level_generator();
     IMAGE level_canvas_bk = this->game_window_canvas;
     put_image(GAME_WINDOW_CENTER_X - panel[2].getwidth() / 2,
               GAME_WINDOW_CENTER_Y - panel[2].getheight() / 2,
@@ -137,23 +143,141 @@ void Game::mouse_click(int x_start, int y_start, int x_end, int y_end, DWORD tim
     }
 }
 
-void Game::level_generator(const int level, const int balloon_color_id) {
-    //Generate balloon panel.
-    int panel_offset = 10;
-    int balloonpanel_width = balloonpanel.getwidth() + panel_offset;
-    int balloonpanel_height = balloonpanel.getheight() + panel_offset;
-    double panel_base_x[2] = {(double) GAME_WINDOW_CENTER_X - 2.5 * balloonpanel_width, (double) GAME_WINDOW_CENTER_X - 2 * balloonpanel_width};
-    double panel_base_y[2] = {(double) GAME_WINDOW_CENTER_Y - 2.5 * balloonpanel_height, (double) GAME_WINDOW_CENTER_Y - 2 * balloonpanel_height};
+void Game::level_generator() {
+    clear_canvas();
+    put_image(0, 0, &bg[0]);
+    put_image(0, 0, &bg[2], BLACK);
+    balloon_color_id = rand() % 7;
+    put_balloonpanel_image();
+    int balloonpanel_clickable_width = balloonpanel.getwidth() / 2;
+    int balloonpanel_clickable_height = balloonpanel.getheight() / 2;
+    int starter_position[2] = {
+            rand() % 5,
+            rand() % 9
+    };
+    while (!level_map_base[level - 1][starter_position[1]][starter_position[0]]) {
+        starter_position[0] = rand() % 5;
+        starter_position[1] = rand() % 9;
+    }
+    bool position_false[4] = {};
+    for (int i = 0, direction = rand() % 4; i < 10; ) {
+        if (position_false[0] &&
+            position_false[1] &&
+            position_false[2] &&
+            position_false[3]) {
+            position_false[0] = false;
+            position_false[1] = false;
+            position_false[2] = false;
+            position_false[3] = false;
+            i = 0;
+            starter_position[0] = rand() % 5;
+            starter_position[1] = rand() % 9;
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 5; j++) {
+                    level_map[level - 1][i][j] = -1;
+                }
+            }
+        }
+        using namespace Roadmap_direction;
+        if (starter_position[1] % 2 == 0) {
+            switch (direction) {
+                case 0:
+                    if (generate_necessary_balloons(starter_position, ODD_UP_LEFT)) {
+                        i++;
+                        continue;
+                    }
+                    position_false[0] = true;
+                    break;
+                case 1:
+                    if (generate_necessary_balloons(starter_position, ODD_UP_RIGHT)) {
+                        i++;
+                        continue;
+                    }
+                    position_false[1] = true;
+                    break;
+                case 2:
+                    if (generate_necessary_balloons(starter_position, ODD_DOWN_LEFT)) {
+                        i++;
+                        continue;
+                    }
+                    position_false[2] = true;
+                    break;
+                case 3:
+                    if (generate_necessary_balloons(starter_position, ODD_DOWN_RIGHT)) {
+                        i++;
+                        continue;
+                    }
+                    position_false[3] = true;
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            switch (direction) {
+                case 0:
+                    if (generate_necessary_balloons(starter_position, EVEN_UP_LEFT)) {
+                        i++;
+                        continue;
+                    }
+                    position_false[0] = true;
+                    break;
+                case 1:
+                    if (generate_necessary_balloons(starter_position, EVEN_UP_RIGHT)) {
+                        i++;
+                        continue;
+                    }
+                    position_false[1] = true;
+                    break;
+                case 2:
+                    if (generate_necessary_balloons(starter_position, EVEN_DOWN_LEFT)) {
+                        i++;
+                        continue;
+                    }
+                    position_false[2] = true;
+                    break;
+                case 3:
+                    if (generate_necessary_balloons(starter_position, EVEN_DOWN_RIGHT)) {
+                        i++;
+                        continue;
+                    }
+                    position_false[3] = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+        direction = rand() % 4;
+    }
+
+}
+
+bool inline Game::generate_necessary_balloons(int (&src_position)[2], const int (&delta_position)[2]) {
+    int next_position[2] = {
+            src_position[0] + delta_position[0],
+            src_position[1] + delta_position[1]
+    };
+    if (next_position[0] < 5 &&
+        next_position[0] >= 0 &&
+        next_position[1] >= 0 &&
+        next_position[1] < 9 &&
+        level_map[level - 1][next_position[1]][next_position[0]] == -1 &&
+        level_map_base[level - 1][next_position[1]][next_position[0]]) {
+        src_position[0] += delta_position[0];
+        src_position[1] += delta_position[1];
+        level_map[level - 1][next_position[1]][next_position[0]] = balloon_color_id;
+        put_balloon_image(src_position[0], src_position[1], balloon_color_id);
+        return true;
+    }
+    return false;
+}
+
+void Game::put_balloonpanel_image() {
     for (int i = 1; i <= 9; i += 2) {
         for (int j = 1; j <= 5; j++) {
             if (level_map_base[level - 1][i - 1][j - 1]) {
                 put_image((int) (panel_base_x[0] + (j - 1) * balloonpanel_width),
                           (int) (panel_base_y[0] + (double) (i - 1) / 2 * balloonpanel_height),
                           &balloonpanel,
-                          BLACK);
-                put_image((int) (panel_base_x[0] + (j - 1) * balloonpanel_width + (double) (90 - 60) / 2),
-                          (int) (panel_base_y[0] + (double) (i - 1) / 2 * balloonpanel_height + (double) (90 - 75) / 2),
-                          &balloon[balloon_color_id],
                           BLACK);
             }
         }
@@ -165,13 +289,22 @@ void Game::level_generator(const int level, const int balloon_color_id) {
                           (int) (panel_base_y[1] + ((double) i / 2 - 1) * balloonpanel_height),
                           &balloonpanel,
                           BLACK);
-                put_image((int) (panel_base_x[1] + (j - 1) * balloonpanel_width + (double) (90 - 60) / 2),
-                          (int) (panel_base_y[1] + ((double) i / 2 - 1) * balloonpanel_height + (double) (90 - 75) / 2),
-                          &balloon[balloon_color_id],
-                          BLACK);
             }
         }
     }
-    int balloonpanel_clickable_width = balloonpanel.getwidth() / 2;
-    int balloonpanel_clickable_height = balloonpanel.getheight() / 2;
+}
+
+void Game::put_balloon_image(const int position_x, const int position_y, const int color_id) {
+    if (position_y % 2) {
+        put_image((int) (panel_base_x[1] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[color_id].getwidth()) / 2),
+                  (int) (panel_base_y[1] + ((double) (position_y + 1) / 2 - 1) * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[color_id].getheight()) / 2 + 5),
+                  &balloon1[color_id],
+                  BLACK);
+    } else {
+        put_image((int) (panel_base_x[0] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[color_id].getwidth()) / 2),
+                  (int) (panel_base_y[0] + (double) position_y / 2 * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[color_id].getheight()) / 2 + 5),
+                  &balloon1[color_id],
+                  BLACK);
+
+    }
 }
