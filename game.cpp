@@ -279,21 +279,21 @@ bool inline Game::generate_necessary_balloons(int (&src_position)[2], const int 
 }
 
 void Game::put_balloonpanel_image() {
-    for (int i = 1; i <= 9; i += 2) {
-        for (int j = 1; j <= 5; j++) {
-            if (level_map_base[level - 1][i - 1][j - 1]) {
-                put_image((int) (panel_base_x[0] + (j - 1) * balloonpanel_width),
-                          (int) (panel_base_y[0] + (double) (i - 1) / 2 * balloonpanel_height),
+    for (int i = 0; i < 9; i += 2) {
+        for (int j = 0; j < 5; j++) {
+            if (level_map_base[level - 1][i][j]) {
+                put_image((int) (panel_base_x[0] + j * balloonpanel_width),
+                          (int) (panel_base_y[0] + (double) i / 2 * balloonpanel_height),
                           &balloonpanel,
                           BLACK);
             }
         }
     }
-    for (int i = 2; i <= 9; i += 2) {
-        for (int j = 1; j <= 5; j++) {
-            if (level_map_base[level - 1][i - 1][j - 1]) {
-                put_image((int) (panel_base_x[1] + (j - 1) * balloonpanel_width),
-                          (int) (panel_base_y[1] + ((double) i / 2 - 1) * balloonpanel_height),
+    for (int i = 1; i < 9; i += 2) {
+        for (int j = 0; j < 5; j++) {
+            if (level_map_base[level - 1][i][j]) {
+                put_image((int) (panel_base_x[1] + j * balloonpanel_width),
+                          (int) (panel_base_y[1] + ((double) (i - 1) / 2) * balloonpanel_height),
                           &balloonpanel,
                           BLACK);
             }
