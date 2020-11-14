@@ -57,7 +57,8 @@ void Game::load_assets() {
     loadimage(&panel[4], _T("./assets/ballonscreen/panel5.png"));
     loadimage(&panel[5], _T("./assets/ballonscreen/panel6.png"));
     loadimage(&panel[6], _T("./assets/ballonscreen/panel7.png"));
-    loadimage(&star, _T("./assets/ballonscreen/star.png"));
+    loadimage(&star1, _T("./assets/ballonscreen/star1.png"));
+    loadimage(&star2, _T("./assets/ballonscreen/star2.png"));
     loadimage(&status, _T("./assets/ballonscreen/status.png"));
     loadimage(&donebtn, _T("./assets/buttons/donebtn.png"));
     loadimage(&exit, _T("./assets/buttons/exit.png"));
@@ -115,10 +116,6 @@ void Game::spawn_level() {
     mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
 }
 
-void Game::spawn_selector() {
-
-}
-
 void Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end) {
     for (MOUSEMSG mouse_event = GetMouseMsg(); ;mouse_event = GetMouseMsg()) {
         if (mouse_event.uMsg == WM_LBUTTONDOWN &&
@@ -172,9 +169,9 @@ void Game::level_generator() {
             i = 0;
             starter_position[0] = rand() % 5;
             starter_position[1] = rand() % 9;
-            for (int i = 0; i < 9; i++) {
-                for (int j = 0; j < 5; j++) {
-                    level_map[level - 1][i][j] = -1;
+            for (int j = 0; j < 9; i++) {
+                for (int k = 0; k < 5; j++) {
+                    level_map[level - 1][j][k] = -1;
                 }
             }
         }
@@ -248,7 +245,14 @@ void Game::level_generator() {
         }
         direction = rand() % 4;
     }
-
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (level_map_base[level - 1][i][j] &&
+                level_map[level - 1][i][j] == -1) {
+                put_balloon_image(j, i, rand() % 7);
+            }
+        }
+    }
 }
 
 bool inline Game::generate_necessary_balloons(int (&src_position)[2], const int (&delta_position)[2]) {
@@ -305,6 +309,9 @@ void Game::put_balloon_image(const int position_x, const int position_y, const i
                   (int) (panel_base_y[0] + (double) position_y / 2 * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[color_id].getheight()) / 2 + 5),
                   &balloon1[color_id],
                   BLACK);
-
     }
+}
+
+void Game::detect_mouse_press_message() {
+
 }

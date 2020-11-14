@@ -84,7 +84,7 @@ public:
 private:
     IMAGE
             game_window_canvas,
-            menubtn, balloon[7], balloon1[7], balloonlines, balloonpanel, balloonsub, bodybg, bomb, line, panel[7], star, status,
+            menubtn, balloon[7], balloon1[7], balloonlines, balloonpanel, balloonsub, bodybg, bomb, line, panel[7], star1, star2, status,
             donebtn, exit, nextbtn, playbtn, prev, resetbtn, setting,
             introbg,
             bg[3], sidepanel;
@@ -99,8 +99,6 @@ private:
 
     void spawn_title();
 
-    void spawn_selector();
-
     void spawn_level();
 
     void mouse_click(int x_start, int y_start, int x_end, int y_end);
@@ -114,4 +112,6 @@ private:
     void put_balloonpanel_image();
 
     void put_balloon_image(int position_x, int position_y, int color_id);
+
+    void detect_mouse_press_message();
 };
