@@ -128,5 +128,5 @@ private:
 
     void update_selected_balloon();
 
-    void inline mouse_left_button_press_event();
+    void mouse_left_button_press_event();
 };
