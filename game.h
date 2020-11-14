@@ -101,9 +101,13 @@ private:
 
     void spawn_level();
 
-    void mouse_click(int x_start, int y_start, int x_end, int y_end);
+    void inline mouse_click(int x_start, int y_start, int x_end, int y_end);
 
-    void mouse_click(int x_start, int y_start, int x_end, int y_end, DWORD time_interval);
+    void inline mouse_click(int x_start, int y_start, int x_end, int y_end, DWORD time_interval);
+
+    void inline mouse_left_button_press(int x_start, int y_start, int x_end, int y_end);
+
+    void inline mouse_left_button_press(int x_start, int y_start, int x_end, int y_end, DWORD time_interval);
 
     void level_generator();
 

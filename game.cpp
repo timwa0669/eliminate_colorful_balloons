@@ -116,7 +116,7 @@ void Game::spawn_level() {
     mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
 }
 
-void Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end) {
+void inline Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end) {
     for (MOUSEMSG mouse_event = GetMouseMsg(); ;mouse_event = GetMouseMsg()) {
         if (mouse_event.uMsg == WM_LBUTTONDOWN &&
             mouse_event.x >= x_start &&
@@ -128,7 +128,7 @@ void Game::mouse_click(const int x_start, const int y_start, const int x_end, co
     }
 }
 
-void Game::mouse_click(int x_start, int y_start, int x_end, int y_end, DWORD time_interval) {
+void inline Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end, const DWORD time_interval) {
     for (MOUSEMSG mouse_event = GetMouseMsg(); ;Sleep(time_interval), mouse_event = GetMouseMsg()) {
         if (mouse_event.uMsg == WM_LBUTTONDOWN &&
             mouse_event.x >= x_start &&
@@ -313,5 +313,13 @@ void Game::put_balloon_image(const int position_x, const int position_y, const i
 }
 
 void Game::detect_mouse_press_message() {
+
+}
+
+void inline Game::mouse_left_button_press(const int x_start, const int y_start, const int x_end, const int y_end) {
+
+}
+
+void inline Game::mouse_left_button_press(const int x_start, const int y_start, const int x_end, const int y_end, const DWORD time_interval) {
 
 }
