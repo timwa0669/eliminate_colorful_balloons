@@ -11,15 +11,6 @@ Game::Game(const int argc, const char **argv) {
     Resize(&this->game_window_canvas, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
     SetWorkingImage(&this->game_window_canvas);
     srand(time(nullptr));
-
-/*
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 5; j++) {
-            level_map[level - 1][i][j].balloon_color_id = -1;
-        }
-    }
-*/
-
     for (int j = 0; j < 9; j++) {
         for (int k = 0; k < 5; k++) {
             level_map[level - 1][j][k].reset();
@@ -625,7 +616,12 @@ void Game::map_position_to_game_window_position(Balloon &target_balloon) {
 }
 
 void Game::win_process() {
-    std::exit(0);
+    put_image(GAME_WINDOW_CENTER_X - panel[1].getwidth() / 2,
+              GAME_WINDOW_CENTER_Y - panel[1].getheight() / 2,
+              &panel[1],
+              BLACK);
+    update_window();
+    mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
 }
 
 void Game::fail_process() {
@@ -633,5 +629,6 @@ void Game::fail_process() {
               GAME_WINDOW_CENTER_Y - panel[0].getheight() / 2,
               &panel[0],
               BLACK);
+    update_window();
     mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
 }
