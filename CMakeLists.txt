@@ -12,7 +12,7 @@ elseif (CMAKE_SIZEOF_VOID_P EQUAL 4)
     link_directories(lib/x86)
 endif ()
 
-add_executable(${PROJECT_NAME} main.cpp main.h game.cpp game.h put_image.cpp put_image.h)
+add_executable(${PROJECT_NAME} main.cpp main.h game.cpp game.h put_image.cpp put_image.h balloon.cpp balloon.h)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

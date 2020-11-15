@@ -11,9 +11,18 @@ Game::Game(const int argc, const char **argv) {
     Resize(&this->game_window_canvas, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
     SetWorkingImage(&this->game_window_canvas);
     srand(time(nullptr));
+
+/*
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 5; j++) {
-            level_map[level - 1][i][j] = -1;
+            level_map[level - 1][i][j].balloon_color_id = -1;
+        }
+    }
+*/
+
+    for (int j = 0; j < 9; j++) {
+        for (int k = 0; k < 5; k++) {
+            level_map[level - 1][j][k].reset();
         }
     }
     cleardevice();
@@ -84,7 +93,8 @@ void Game::spawn_title() {
     put_image(GAME_WINDOW_WIDTH - sidepanel.getwidth(), 579, &sidepanel, BLACK);
     put_image(playbtn_x_start, playbtn_y_start, &playbtn, BLACK);
     update_window();
-    mouse_click(playbtn_x_start, playbtn_y_start, playbtn_x_start + playbtn.getwidth(), playbtn_y_start + playbtn.getheight());
+    mouse_click(playbtn_x_start, playbtn_y_start, playbtn_x_start + playbtn.getwidth(),
+                playbtn_y_start + playbtn.getheight());
     spawn_level();
 }
 
@@ -115,12 +125,26 @@ void Game::spawn_level() {
     mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
     this->game_window_canvas = level_canvas_bk;
     update_window();
+/*
+
+    put_line_image(Roadmap_direction::LINE_UP_LEFT, 2, 3);
+    put_line_image(Roadmap_direction::LINE_DOWN_LEFT, 2, 3);
+    put_line_image(Roadmap_direction::LINE_UP_RIGHT, 2, 3);
+    put_line_image(Roadmap_direction::LINE_DOWN_RIGHT, 2, 3);
+
+    put_line_image(Roadmap_direction::LINE_UP_LEFT, 4, 6);
+    put_line_image(Roadmap_direction::LINE_DOWN_LEFT, 4, 6);
+    put_line_image(Roadmap_direction::LINE_UP_RIGHT, 4, 6);
+    put_line_image(Roadmap_direction::LINE_DOWN_RIGHT, 4, 6);
+    update_window();
+    mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
+*/
     mouse_left_button_press_event();
 }
 
 void inline Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end) {
     MOUSEMSG mouse_event = GetMouseMsg();
-    for (; ;mouse_event = GetMouseMsg()) {
+    for (;; mouse_event = GetMouseMsg()) {
         if (mouse_event.uMsg == WM_LBUTTONDOWN &&
             mouse_event.x >= x_start &&
             mouse_event.x <= x_end &&
@@ -129,7 +153,7 @@ void inline Game::mouse_click(const int x_start, const int y_start, const int x_
             break;
         }
     }
-    for (; ;mouse_event = GetMouseMsg()) {
+    for (;; mouse_event = GetMouseMsg()) {
         if (mouse_event.uMsg == WM_LBUTTONUP &&
             mouse_event.x >= x_start &&
             mouse_event.x <= x_end &&
@@ -140,9 +164,10 @@ void inline Game::mouse_click(const int x_start, const int y_start, const int x_
     }
 }
 
-void inline Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end, const DWORD time_interval) {
+void inline
+Game::mouse_click(const int x_start, const int y_start, const int x_end, const int y_end, const DWORD time_interval) {
     MOUSEMSG mouse_event = GetMouseMsg();
-    for (; ;Sleep(time_interval), mouse_event = GetMouseMsg()) {
+    for (;; Sleep(time_interval), mouse_event = GetMouseMsg()) {
         if (mouse_event.uMsg == WM_LBUTTONDOWN &&
             mouse_event.x >= x_start &&
             mouse_event.x <= x_end &&
@@ -151,7 +176,7 @@ void inline Game::mouse_click(const int x_start, const int y_start, const int x_
             break;
         }
     }
-    for (; ;Sleep(time_interval), mouse_event = GetMouseMsg()) {
+    for (;; Sleep(time_interval), mouse_event = GetMouseMsg()) {
         if (mouse_event.uMsg == WM_LBUTTONUP &&
             mouse_event.x >= x_start &&
             mouse_event.x <= x_end &&
@@ -178,7 +203,7 @@ void Game::level_generator() {
         starter_position[1] = rand() % 9;
     }
     bool position_false[4] = {};
-    for (int i = 0, direction = rand() % 4; i < 10; ) {
+    for (int i = 0, direction = rand() % 4; i < 10;) {
         if (position_false[0] &&
             position_false[1] &&
             position_false[2] &&
@@ -192,7 +217,7 @@ void Game::level_generator() {
             starter_position[1] = rand() % 9;
             for (int j = 0; j < 9; j++) {
                 for (int k = 0; k < 5; k++) {
-                    level_map[level - 1][j][k] = -1;
+                    level_map[level - 1][j][k].reset();
                 }
             }
         }
@@ -269,8 +294,15 @@ void Game::level_generator() {
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 5; j++) {
             if (level_map_base[level - 1][i][j] &&
-                level_map[level - 1][i][j] == -1) {
-                put_balloon_image(j, i, rand() % 7);
+                level_map[level - 1][i][j].balloon_color_id == -1) {
+                level_map[level - 1][i][j].balloon_color_id = balloon_color_id;
+                level_map[level - 1][i][j].map_x = j;
+                level_map[level - 1][i][j].map_y = i;
+                map_position_to_game_window_position(level_map[level - 1][i][j]);
+                put_image(level_map[level - 1][i][j].gw_x,
+                          level_map[level - 1][i][j].gw_y,
+                          &balloon1[rand() % 7],
+                          BLACK);
             }
         }
     }
@@ -285,12 +317,18 @@ bool inline Game::generate_essential_balloons(int (&src_position)[2], const int 
         next_position[0] >= 0 &&
         next_position[1] >= 0 &&
         next_position[1] < 9 &&
-        level_map[level - 1][next_position[1]][next_position[0]] == -1 &&
+        level_map[level - 1][next_position[1]][next_position[0]].balloon_color_id == -1 &&
         level_map_base[level - 1][next_position[1]][next_position[0]]) {
         src_position[0] += delta_position[0];
         src_position[1] += delta_position[1];
-        level_map[level - 1][next_position[1]][next_position[0]] = balloon_color_id;
-        put_balloon_image(src_position[0], src_position[1], balloon_color_id);
+        level_map[level - 1][next_position[1]][next_position[0]].balloon_color_id = balloon_color_id;
+        level_map[level - 1][next_position[1]][next_position[0]].map_x = src_position[0];
+        level_map[level - 1][next_position[1]][next_position[0]].map_y = src_position[1];
+        map_position_to_game_window_position(level_map[level - 1][next_position[1]][next_position[0]]);
+        put_image(level_map[level - 1][next_position[1]][next_position[0]].gw_x,
+                  level_map[level - 1][next_position[1]][next_position[0]].gw_y,
+                  &balloon1[balloon_color_id],
+                  BLACK);
         return true;
     }
     return false;
@@ -319,33 +357,241 @@ void Game::put_balloonpanel_image() {
     }
 }
 
-void Game::put_balloon_image(const int position_x, const int position_y, const int color_id) {
-    if (position_y % 2) {
-        put_image((int) (panel_base_x[1] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[color_id].getwidth()) / 2),
-                  (int) (panel_base_y[1] + ((double) (position_y + 1) / 2 - 1) * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[color_id].getheight()) / 2 + 5),
-                  &balloon1[color_id],
-                  BLACK);
-    } else {
-        put_image((int) (panel_base_x[0] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[color_id].getwidth()) / 2),
-                  (int) (panel_base_y[0] + (double) position_y / 2 * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[color_id].getheight()) / 2 + 5),
-                  &balloon1[color_id],
-                  BLACK);
-    }
-}
-
 void Game::update_selected_balloon() {
 
 }
 
 void Game::mouse_left_button_press_event() {
+    //FlushMouseMsgBuffer();
+    MOUSEMSG mouse_event = GetMouseMsg();
+    Balloon tmp, last_tmp;
+    for (int stage = 0;;) {
+        //FlushMouseMsgBuffer();
+        mouse_event = GetMouseMsg();
+        if (mouse_event.uMsg == WM_LBUTTONDOWN) {
+            stage++;
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 5; j++) {
+                    tmp.map_x = j;
+                    tmp.map_y = i;
+                    map_position_to_game_window_position(tmp);
+                    if (mouse_event.x >= tmp.gw_x + balloonpanel_width / 4 &&
+                        mouse_event.x <= tmp.gw_x + balloonpanel_width / 4 * 3 &&
+                        mouse_event.y >= tmp.gw_y + balloonpanel_height / 4 &&
+                        mouse_event.y <= tmp.gw_y + balloonpanel_height / 4 * 3 &&
+                        stage == 1) {
+                        stage++;
+                        last_tmp = tmp;
+                        continue;
+                    }
+                }
+            }
+        }
+        if (mouse_event.uMsg == WM_LBUTTONUP) {
+            stage = 0;
+            continue;
+        }
+        mouse_event = GetMouseMsg();
+        if (stage == 2) {
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 5; j++) {
+                    tmp.map_x = j;
+                    tmp.map_y = i;
+                    map_position_to_game_window_position(tmp);
+                    if (mouse_event.x >= tmp.gw_x + balloonpanel_width / 4 &&
+                        mouse_event.x <= tmp.gw_x + balloonpanel_width / 4 * 3 &&
+                        mouse_event.y >= tmp.gw_y + balloonpanel_height / 4 &&
+                        mouse_event.y <= tmp.gw_y + balloonpanel_height / 4 * 3) {
+                        int tmp_direction[2] = {tmp.map_x - last_tmp.map_x, tmp.map_y - last_tmp.map_y};
+                        put_line_image(get_line_direction(get_roadmap_direction(tmp_direction, last_tmp.map_y)),
+                                       last_tmp.map_x, last_tmp.map_y);
+                        update_window();
+                        continue;
+                    }
+                }
+            }
+        }
+        //break;
+        //Sleep(50);
+    }
 
 }
 
+int Game::get_line_direction(int roadmap_direction) {
+    switch (roadmap_direction) {
+        using namespace Roadmap_direction;
+        case 0:
+        case 4:
+            return LINE_UP_LEFT;
+        case 1:
+        case 5:
+            return LINE_UP_RIGHT;
+        case 2:
+        case 6:
+            return LINE_DOWN_LEFT;
+        case 3:
+        case 7:
+            return LINE_DOWN_RIGHT;
+        default:
+            return -1;
+    }
+}
+
+int Game::get_roadmap_direction(const int (&delta_position)[2], const int position_y) {
+    if (position_y % 2) {
+        switch (delta_position[1]) {
+            case -1:
+                switch (delta_position[0]) {
+                    case 0:
+                        return 4;
+                    case 1:
+                        return 5;
+                    default:
+                        break;
+                }
+                break;
+            case 1:
+                switch (delta_position[0]) {
+                    case 0:
+                        return 6;
+                    case 1:
+                        return 7;
+                    default:
+                        break;
+                }
+                break;
+            default:
+                break;
+        }
+    } else {
+        switch (delta_position[1]) {
+            case -1:
+                switch (delta_position[0]) {
+                    case -1:
+                        return 0;
+                    case 0:
+                        return 1;
+                    default:
+                        break;
+                }
+                break;
+            case 1:
+                switch (delta_position[0]) {
+                    case -1:
+                        return 2;
+                    case 0:
+                        return 3;
+                    default:
+                        break;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    return -1;
+}
+
 void Game::put_line_image(int line_direction, int position_x, int position_y) {
+    if (position_y % 2) {
+        switch (line_direction) {
+            using namespace Roadmap_direction;
+            case LINE_DOWN_LEFT:
+/*                //position_x -= 1;
+                position_y += 1;*/
+                put_image((int) (panel_base_x[1] + (position_x - 0.5) * balloonpanel_width +
+                                 (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[1] + ((double) (position_y + 2) / 2 - 1) * balloonpanel_height +
+                                 (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10 -
+                                 (double) line[1].getheight() / 2),
+                          &line[1],
+                          BLACK);
+                break;
+            case LINE_UP_RIGHT:
+                put_image((int) (panel_base_x[1] + position_x * balloonpanel_width +
+                                 (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[1] + ((double) (position_y + 1) / 2 - 1) * balloonpanel_height +
+                                 (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10 -
+                                 (double) line[1].getheight() / 2),
+                          &line[1],
+                          BLACK);
+                break;
+            case LINE_UP_LEFT:
+/*
+                //position_x -= 1;
+                position_y -= 1;
+*/
+                put_image((int) (panel_base_x[1] + (position_x - 0.5) * balloonpanel_width +
+                                 (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[1] + ((double) position_y / 2 - 1) * balloonpanel_height +
+                                 (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10),
+                          &line[2],
+                          BLACK);
+                break;
+            case LINE_DOWN_RIGHT:
+                put_image((int) (panel_base_x[1] + position_x * balloonpanel_width +
+                                 (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[1] + ((double) (position_y + 1) / 2 - 1) * balloonpanel_height +
+                                 (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10),
+                          &line[2],
+                          BLACK);
+                break;
+            default:
+                break;
+        }
+    } else {
+        switch (line_direction) {
+            using namespace Roadmap_direction;
+            case LINE_DOWN_LEFT:
+/*
+                //position_x -= 0.5;
+                position_y += 1;
+*/
+                put_image((int) (panel_base_x[0] + (position_x - 0.5) * balloonpanel_width +
+                                 (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[0] + (double) (position_y + 1) / 2 * balloonpanel_height +
+                                 (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10 -
+                                 (double) line[1].getheight() / 2),
+                          &line[1],
+                          BLACK);
+                break;
+            case LINE_UP_RIGHT:
+                put_image((int) (panel_base_x[0] + position_x * balloonpanel_width +
+                                 (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[0] + (double) position_y / 2 * balloonpanel_height +
+                                 (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10 -
+                                 (double) line[1].getheight() / 2),
+                          &line[1],
+                          BLACK);
+                break;
+            case LINE_UP_LEFT:
+/*
+                //position_x -= 0.5;
+                position_y -= 1;
+*/
+                put_image((int) (panel_base_x[0] + (position_x - 0.5) * balloonpanel_width +
+                                 (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[0] + (double) (position_y - 1) / 2 * balloonpanel_height +
+                                 (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10),
+                          &line[2],
+                          BLACK);
+                break;
+            case LINE_DOWN_RIGHT:
+                put_image((int) (panel_base_x[0] + position_x * balloonpanel_width +
+                                 (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
+                          (int) (panel_base_y[0] + (double) position_y / 2 * balloonpanel_height +
+                                 (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10),
+                          &line[2],
+                          BLACK);
+                break;
+            default:
+                break;
+        }
+/*
     switch (line_direction) {
         using namespace Roadmap_direction;
         case LINE_DOWN_LEFT:
-            position_x -= 1;
+            //position_x += 1;
             position_y += 1;
         case LINE_UP_RIGHT:
             if (position_y % 2) {
@@ -361,7 +607,7 @@ void Game::put_line_image(int line_direction, int position_x, int position_y) {
             }
             break;
         case LINE_UP_LEFT:
-            position_x -= 1;
+            //position_x += 1;
             position_y -= 1;
         case LINE_DOWN_RIGHT:
             if (position_y % 2) {
@@ -378,5 +624,29 @@ void Game::put_line_image(int line_direction, int position_x, int position_y) {
             break;
         default:
             break;
+*/
     }
+}
+
+void Game::map_position_to_game_window_position(Balloon &target_balloon) {
+    if (target_balloon.map_y % 2) {
+        target_balloon.gw_x = (int) (panel_base_x[1] + target_balloon.map_x * balloonpanel_width +
+                                     (double) (balloonpanel.getwidth() -
+                                               balloon1[target_balloon.balloon_color_id].getwidth()) / 2);
+        target_balloon.gw_y = (int) (panel_base_y[1] +
+                                     ((double) (target_balloon.map_y + 1) / 2 - 1) * balloonpanel_height +
+                                     (double) (balloonpanel.getheight() -
+                                               balloon1[target_balloon.balloon_color_id].getheight()) / 2 + 5);
+    } else {
+        target_balloon.gw_x = (int) (panel_base_x[0] + target_balloon.map_x * balloonpanel_width +
+                                     (double) (balloonpanel.getwidth() -
+                                               balloon1[target_balloon.balloon_color_id].getwidth()) / 2);
+        target_balloon.gw_y = (int) (panel_base_y[0] + (double) target_balloon.map_y / 2 * balloonpanel_height +
+                                     (double) (balloonpanel.getheight() -
+                                               balloon1[target_balloon.balloon_color_id].getheight()) / 2 + 5);
+    }
+}
+
+void Game::detect_map_area_from_game_window_position(Balloon &target_balloon) {
+
 }

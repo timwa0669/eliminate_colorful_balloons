@@ -12,6 +12,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
+#include "balloon.h"
 
 namespace Roadmap_direction {
     /*
@@ -47,6 +48,11 @@ public:
     const int GAME_WINDOW_CENTER_Y = GAME_WINDOW_HEIGHT / 2;
     const uint8_t GAME_WINDOW_FLAGS = EW_DBLCLKS;
     const COLORREF BACKGROUND_COLOR = RGB(0x00, 0x00, 0x00);
+    const int panel_offset = 10;
+    int balloonpanel_width = 0;
+    int balloonpanel_height = 0;
+    double panel_base_x[2];
+    double panel_base_y[2];
 
     Game(int argc, const char **argv);
 
@@ -86,9 +92,7 @@ public:
             }
     };
 
-    int level_map[1][9][5] = {};
-
-    int level_map_press_area[1][9][5][2] = {};
+    Balloon level_map[1][9][5];
 
     int balloon_color_id = -1;
 
@@ -99,12 +103,6 @@ private:
             donebtn, exit, nextbtn, playbtn, prev, resetbtn, setting,
             introbg,
             bg[3], sidepanel;
-
-    const int panel_offset = 10;
-    int balloonpanel_width = 0;
-    int balloonpanel_height = 0;
-    double panel_base_x[2] = {};
-    double panel_base_y[2] = {};
 
     void load_assets();
 
@@ -122,11 +120,18 @@ private:
 
     void put_balloonpanel_image();
 
-    void put_balloon_image(int position_x, int position_y, int color_id);
-
     void put_line_image(int line_direction, int position_x, int position_y);
 
     void update_selected_balloon();
 
     void mouse_left_button_press_event();
+
+    void map_position_to_game_window_position(Balloon &target_balloon);
+
+    void detect_map_area_from_game_window_position(Balloon &target_balloon);
+
+    int get_roadmap_direction(const int (&delta_position)[2], int position_y);
+
+    int get_line_direction(int roadmap_direction);
+
 };
