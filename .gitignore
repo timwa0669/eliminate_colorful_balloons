@@ -1,6 +1,7 @@
 .idea
 .vs
 ./*.DS_Store
+./*Thumbs.db
 build*
 cmake*
 out
