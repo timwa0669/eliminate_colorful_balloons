@@ -11,4 +11,5 @@ void Balloon::reset() {
     this->map_y = 0;
     this->gw_x = 0;
     this->gw_y = 0;
+    this->is_linked = false;
 }

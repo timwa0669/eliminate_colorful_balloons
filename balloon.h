@@ -11,6 +11,7 @@ public:
     int map_y = 0;
     int gw_x = 0;
     int gw_y = 0;
+    bool is_linked = false;
 
     void reset();
 };

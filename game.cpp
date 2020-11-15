@@ -203,7 +203,7 @@ void Game::level_generator() {
         starter_position[1] = rand() % 9;
     }
     bool position_false[4] = {};
-    for (int i = 0, direction = rand() % 4; i < 10;) {
+    for (int i = 0, direction = rand() % 4; i < generated_essential_balloon_count[level - 1];) {
         if (position_false[0] &&
             position_false[1] &&
             position_false[2] &&
@@ -295,13 +295,13 @@ void Game::level_generator() {
         for (int j = 0; j < 5; j++) {
             if (level_map_base[level - 1][i][j] &&
                 level_map[level - 1][i][j].balloon_color_id == -1) {
-                level_map[level - 1][i][j].balloon_color_id = balloon_color_id;
+                level_map[level - 1][i][j].balloon_color_id = rand() % 7;
                 level_map[level - 1][i][j].map_x = j;
                 level_map[level - 1][i][j].map_y = i;
                 map_position_to_game_window_position(level_map[level - 1][i][j]);
                 put_image(level_map[level - 1][i][j].gw_x,
                           level_map[level - 1][i][j].gw_y,
-                          &balloon1[rand() % 7],
+                          &balloon1[level_map[level - 1][i][j].balloon_color_id],
                           BLACK);
             }
         }
@@ -357,62 +357,91 @@ void Game::put_balloonpanel_image() {
     }
 }
 
-void Game::update_selected_balloon() {
-
-}
-
 void Game::mouse_left_button_press_event() {
     //FlushMouseMsgBuffer();
     MOUSEMSG mouse_event = GetMouseMsg();
     Balloon tmp, last_tmp;
-    for (int stage = 0;;) {
-        //FlushMouseMsgBuffer();
-        mouse_event = GetMouseMsg();
-        if (mouse_event.uMsg == WM_LBUTTONDOWN) {
-            stage++;
-            for (int i = 0; i < 9; i++) {
-                for (int j = 0; j < 5; j++) {
+    bool selected_other_balls = false;
+    for (int stage = 0, linked_count = 0; linked_count == 0 || stage != 0;) {
+        stage_0:
+        for (mouse_event = GetMouseMsg(); stage == 0; mouse_event = GetMouseMsg()) {
+            if (linked_count > 0) {
+                goto stopped_mouse_event;
+            }
+            if (mouse_event.uMsg == WM_LBUTTONDOWN && mouse_event.mkLButton) {
+                stage++;
+                goto stage_1;
+            }
+        }
+        stage_1:
+        for (mouse_event = GetMouseMsg(); stage == 1; mouse_event = GetMouseMsg()) {
+            for (uint8_t i = 0; i < 9; i++) {
+                for (uint8_t j = 0; j < 5; j++) {
                     tmp.map_x = j;
                     tmp.map_y = i;
                     map_position_to_game_window_position(tmp);
-                    if (mouse_event.x >= tmp.gw_x + balloonpanel_width / 4 &&
-                        mouse_event.x <= tmp.gw_x + balloonpanel_width / 4 * 3 &&
-                        mouse_event.y >= tmp.gw_y + balloonpanel_height / 4 &&
-                        mouse_event.y <= tmp.gw_y + balloonpanel_height / 4 * 3 &&
-                        stage == 1) {
+                    if ((float) mouse_event.x >= (float) tmp.gw_x + (float) balloonpanel_width / 4 &&
+                        (float) mouse_event.x <= (float) tmp.gw_x + (float) balloonpanel_width / 4 * 3 &&
+                        (float) mouse_event.y >= (float) tmp.gw_y + (float) balloonpanel_height / 4 &&
+                        (float) mouse_event.y <= (float) tmp.gw_y + (float) balloonpanel_height / 4 * 3 &&
+                        level_map_base[level - 1][tmp.map_y][tmp.map_x]) {
                         stage++;
                         last_tmp = tmp;
-                        continue;
+                        if (level_map[level - 1][tmp.map_y][tmp.map_x].balloon_color_id == balloon_color_id) {
+                            correct_linked_balloon_count++;
+                        } else {
+                            selected_other_balls = true;
+                        }
+                        goto stage_2;
                     }
                 }
             }
+            if (mouse_event.uMsg == WM_LBUTTONUP || !mouse_event.mkLButton) {
+                stage = 0;
+                goto stage_0;
+            }
         }
-        if (mouse_event.uMsg == WM_LBUTTONUP) {
-            stage = 0;
-            continue;
-        }
-        mouse_event = GetMouseMsg();
-        if (stage == 2) {
-            for (int i = 0; i < 9; i++) {
-                for (int j = 0; j < 5; j++) {
+        stage_2:
+        for (mouse_event = GetMouseMsg(); stage == 2; mouse_event = GetMouseMsg()) {
+            if (mouse_event.uMsg == WM_LBUTTONUP || !mouse_event.mkLButton) {
+                stage = 0;
+                goto stage_0;
+            }
+            for (uint8_t i = 0; i < 9; i++) {
+                for (uint8_t j = 0; j < 5; j++) {
                     tmp.map_x = j;
                     tmp.map_y = i;
                     map_position_to_game_window_position(tmp);
-                    if (mouse_event.x >= tmp.gw_x + balloonpanel_width / 4 &&
-                        mouse_event.x <= tmp.gw_x + balloonpanel_width / 4 * 3 &&
-                        mouse_event.y >= tmp.gw_y + balloonpanel_height / 4 &&
-                        mouse_event.y <= tmp.gw_y + balloonpanel_height / 4 * 3) {
+                    if ((float) mouse_event.x >= (float) tmp.gw_x + (float) balloonpanel_width / 4 &&
+                        (float) mouse_event.x <= (float) tmp.gw_x + (float) balloonpanel_width / 4 * 3 &&
+                        (float) mouse_event.y >= (float) tmp.gw_y + (float) balloonpanel_height / 4 &&
+                        (float) mouse_event.y <= (float) tmp.gw_y + (float) balloonpanel_height / 4 * 3 &&
+                        level_map_base[level - 1][tmp.map_y][tmp.map_x] &&
+                        !level_map[level - 1][tmp.map_y][tmp.map_x].is_linked) {
                         int tmp_direction[2] = {tmp.map_x - last_tmp.map_x, tmp.map_y - last_tmp.map_y};
                         put_line_image(get_line_direction(get_roadmap_direction(tmp_direction, last_tmp.map_y)),
                                        last_tmp.map_x, last_tmp.map_y);
+                        linked_count++;
+                        level_map[level - 1][tmp.map_y][tmp.map_x].is_linked = true;
+                        level_map[level - 1][last_tmp.map_y][last_tmp.map_x].is_linked = true;
+                        if (level_map[level - 1][tmp.map_y][tmp.map_x].balloon_color_id == balloon_color_id) {
+                            correct_linked_balloon_count++;
+                        } else {
+                            selected_other_balls = true;
+                        }
                         update_window();
-                        continue;
+                        last_tmp = tmp;
                     }
+                    //break;
                 }
             }
         }
-        //break;
-        //Sleep(50);
+    }
+    stopped_mouse_event:
+    if (correct_linked_balloon_count >= target_balloon_linked_count[level - 1] && !selected_other_balls) {
+        win_process();
+    } else {
+        fail_process();
     }
 
 }
@@ -497,8 +526,6 @@ void Game::put_line_image(int line_direction, int position_x, int position_y) {
         switch (line_direction) {
             using namespace Roadmap_direction;
             case LINE_DOWN_LEFT:
-/*                //position_x -= 1;
-                position_y += 1;*/
                 put_image((int) (panel_base_x[1] + (position_x - 0.5) * balloonpanel_width +
                                  (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
                           (int) (panel_base_y[1] + ((double) (position_y + 2) / 2 - 1) * balloonpanel_height +
@@ -517,10 +544,6 @@ void Game::put_line_image(int line_direction, int position_x, int position_y) {
                           BLACK);
                 break;
             case LINE_UP_LEFT:
-/*
-                //position_x -= 1;
-                position_y -= 1;
-*/
                 put_image((int) (panel_base_x[1] + (position_x - 0.5) * balloonpanel_width +
                                  (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
                           (int) (panel_base_y[1] + ((double) position_y / 2 - 1) * balloonpanel_height +
@@ -543,10 +566,6 @@ void Game::put_line_image(int line_direction, int position_x, int position_y) {
         switch (line_direction) {
             using namespace Roadmap_direction;
             case LINE_DOWN_LEFT:
-/*
-                //position_x -= 0.5;
-                position_y += 1;
-*/
                 put_image((int) (panel_base_x[0] + (position_x - 0.5) * balloonpanel_width +
                                  (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
                           (int) (panel_base_y[0] + (double) (position_y + 1) / 2 * balloonpanel_height +
@@ -565,10 +584,6 @@ void Game::put_line_image(int line_direction, int position_x, int position_y) {
                           BLACK);
                 break;
             case LINE_UP_LEFT:
-/*
-                //position_x -= 0.5;
-                position_y -= 1;
-*/
                 put_image((int) (panel_base_x[0] + (position_x - 0.5) * balloonpanel_width +
                                  (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
                           (int) (panel_base_y[0] + (double) (position_y - 1) / 2 * balloonpanel_height +
@@ -587,44 +602,6 @@ void Game::put_line_image(int line_direction, int position_x, int position_y) {
             default:
                 break;
         }
-/*
-    switch (line_direction) {
-        using namespace Roadmap_direction;
-        case LINE_DOWN_LEFT:
-            //position_x += 1;
-            position_y += 1;
-        case LINE_UP_RIGHT:
-            if (position_y % 2) {
-                put_image((int) (panel_base_x[1] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
-                          (int) (panel_base_y[1] + ((double) (position_y + 1) / 2 - 1) * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10 - (double) line[1].getheight() / 2),
-                          &line[1],
-                          BLACK);
-            } else {
-                put_image((int) (panel_base_x[0] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
-                          (int) (panel_base_y[0] + (double) position_y / 2 * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10 - (double) line[1].getheight() / 2),
-                          &line[1],
-                          BLACK);
-            }
-            break;
-        case LINE_UP_LEFT:
-            //position_x += 1;
-            position_y -= 1;
-        case LINE_DOWN_RIGHT:
-            if (position_y % 2) {
-                put_image((int) (panel_base_x[1] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
-                          (int) (panel_base_y[1] + ((double) (position_y + 1) / 2 - 1) * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10),
-                          &line[2],
-                          BLACK);
-            } else {
-                put_image((int) (panel_base_x[0] + position_x * balloonpanel_width + (double) (balloonpanel.getwidth() - balloon1[0].getwidth()) / 2 + 5),
-                          (int) (panel_base_y[0] + (double) position_y / 2 * balloonpanel_height + (double) (balloonpanel.getheight() - balloon1[0].getheight()) / 2 + 10),
-                          &line[2],
-                          BLACK);
-            }
-            break;
-        default:
-            break;
-*/
     }
 }
 
@@ -647,6 +624,14 @@ void Game::map_position_to_game_window_position(Balloon &target_balloon) {
     }
 }
 
-void Game::detect_map_area_from_game_window_position(Balloon &target_balloon) {
+void Game::win_process() {
+    std::exit(0);
+}
 
+void Game::fail_process() {
+    put_image(GAME_WINDOW_CENTER_X - panel[0].getwidth() / 2,
+              GAME_WINDOW_CENTER_Y - panel[0].getheight() / 2,
+              &panel[0],
+              BLACK);
+    mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
 }

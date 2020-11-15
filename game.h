@@ -41,12 +41,13 @@ class Game {
 public:
     HWND game_window_hwnd;
     int level = 1;
-
+    const int generated_essential_balloon_count[1] = {10};
+    const int target_balloon_linked_count[1] = {8};
     const int GAME_WINDOW_WIDTH = 540;
     const int GAME_WINDOW_HEIGHT = 800;
     const int GAME_WINDOW_CENTER_X = GAME_WINDOW_WIDTH / 2;
     const int GAME_WINDOW_CENTER_Y = GAME_WINDOW_HEIGHT / 2;
-    const uint8_t GAME_WINDOW_FLAGS = EW_DBLCLKS;
+    const uint8_t GAME_WINDOW_FLAGS = 0;
     const COLORREF BACKGROUND_COLOR = RGB(0x00, 0x00, 0x00);
     const int panel_offset = 10;
     int balloonpanel_width = 0;
@@ -96,6 +97,8 @@ public:
 
     int balloon_color_id = -1;
 
+    int correct_linked_balloon_count = 0;
+
 private:
     IMAGE
             game_window_canvas,
@@ -122,16 +125,15 @@ private:
 
     void put_line_image(int line_direction, int position_x, int position_y);
 
-    void update_selected_balloon();
-
     void mouse_left_button_press_event();
 
     void map_position_to_game_window_position(Balloon &target_balloon);
-
-    void detect_map_area_from_game_window_position(Balloon &target_balloon);
 
     int get_roadmap_direction(const int (&delta_position)[2], int position_y);
 
     int get_line_direction(int roadmap_direction);
 
+    void win_process();
+
+    void fail_process();
 };
