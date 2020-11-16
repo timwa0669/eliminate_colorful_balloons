@@ -410,8 +410,11 @@ void Game::mouse_left_button_press_event() {
                         level_map_base[level - 1][tmp.map_y][tmp.map_x] &&
                         !level_map[level - 1][tmp.map_y][tmp.map_x].is_linked) {
                         int tmp_direction[2] = {tmp.map_x - last_tmp.map_x, tmp.map_y - last_tmp.map_y};
-                        put_line_image(get_line_direction(get_roadmap_direction(tmp_direction, last_tmp.map_y)),
-                                       last_tmp.map_x, last_tmp.map_y);
+                        int roadmap_direction = get_roadmap_direction(tmp_direction, last_tmp.map_y);
+                        if (roadmap_direction == -1) {
+                            goto stage_2;
+                        }
+                        put_line_image(get_line_direction(roadmap_direction), last_tmp.map_x, last_tmp.map_y);
                         linked_count++;
                         level_map[level - 1][tmp.map_y][tmp.map_x].is_linked = true;
                         level_map[level - 1][last_tmp.map_y][last_tmp.map_x].is_linked = true;
