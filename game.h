@@ -105,7 +105,7 @@ private:
             menubtn, balloon[7], balloon1[7], balloonlines, balloonpanel, balloonsub, bodybg, bomb, line[3], panel[7], star1, star2, status,
             donebtn, exit, nextbtn, playbtn, prev, resetbtn, setting,
             introbg,
-            bg[3], sidepanel;
+            bg[3], sidepanel, stage1;
 
     void load_assets();
 

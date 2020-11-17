@@ -54,11 +54,12 @@ void Game::load_assets() {
     rotateimage(&line[2], &line[0], 0.75 * M_PI, BLACK, true, true);
     loadimage(&panel[0], _T("./assets/ballonscreen/panel1.png"));
     loadimage(&panel[1], _T("./assets/ballonscreen/panel2.png"));
-    loadimage(&panel[2], _T("./assets/ballonscreen/panel3.png"));
+    loadimage(&panel[2], _T("./assets/ballonscreen/panel3_1.png"));
     loadimage(&panel[3], _T("./assets/ballonscreen/panel4.png"));
     loadimage(&panel[4], _T("./assets/ballonscreen/panel5.png"));
     loadimage(&panel[5], _T("./assets/ballonscreen/panel6.png"));
     loadimage(&panel[6], _T("./assets/ballonscreen/panel7.png"));
+    loadimage(&stage1, _T("./assets/ballonscreen/stage_1.png"));
     loadimage(&star1, _T("./assets/ballonscreen/star1.png"));
     loadimage(&star2, _T("./assets/ballonscreen/star2.png"));
     loadimage(&status, _T("./assets/ballonscreen/status.png"));
@@ -112,24 +113,14 @@ void Game::spawn_level() {
               GAME_WINDOW_CENTER_Y - panel[2].getheight() / 2,
               &panel[2],
               BLACK);
+    put_image(GAME_WINDOW_CENTER_X - balloon1[balloon_color_id].getwidth() / 2,
+              GAME_WINDOW_CENTER_Y - balloon1[balloon_color_id].getheight() / 2 + 80,
+              &balloon1[balloon_color_id],
+              BLACK);
     update_window();
     mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
     this->game_window_canvas = level_canvas_bk;
     update_window();
-/*
-
-    put_line_image(Roadmap_direction::LINE_UP_LEFT, 2, 3);
-    put_line_image(Roadmap_direction::LINE_DOWN_LEFT, 2, 3);
-    put_line_image(Roadmap_direction::LINE_UP_RIGHT, 2, 3);
-    put_line_image(Roadmap_direction::LINE_DOWN_RIGHT, 2, 3);
-
-    put_line_image(Roadmap_direction::LINE_UP_LEFT, 4, 6);
-    put_line_image(Roadmap_direction::LINE_DOWN_LEFT, 4, 6);
-    put_line_image(Roadmap_direction::LINE_UP_RIGHT, 4, 6);
-    put_line_image(Roadmap_direction::LINE_DOWN_RIGHT, 4, 6);
-    update_window();
-    mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
-*/
     mouse_left_button_press_event();
 }
 
@@ -185,6 +176,14 @@ void Game::level_generator() {
     put_image(0, 0, &bg[2], BLACK);
     balloon_color_id = rand() % 7;
     put_balloonpanel_image();
+    put_image(GAME_WINDOW_CENTER_X - balloonsub.getwidth() / 2,
+              15,
+              &balloonsub,
+              BLACK);
+    put_image(GAME_WINDOW_CENTER_X - balloon1[balloon_color_id].getwidth() / 2,
+              19,
+              &balloon1[balloon_color_id],
+              BLACK);
     int starter_position[2] = {
             rand() % 5,
             rand() % 9
@@ -349,7 +348,6 @@ void Game::put_balloonpanel_image() {
 }
 
 void Game::mouse_left_button_press_event() {
-    //FlushMouseMsgBuffer();
     MOUSEMSG mouse_event = GetMouseMsg();
     Balloon tmp, last_tmp;
     bool selected_other_balls = false;
@@ -426,7 +424,6 @@ void Game::mouse_left_button_press_event() {
                         update_window();
                         last_tmp = tmp;
                     }
-                    //break;
                 }
             }
         }
@@ -623,6 +620,10 @@ void Game::win_process() {
               GAME_WINDOW_CENTER_Y - panel[1].getheight() / 2,
               &panel[1],
               BLACK);
+    put_image(GAME_WINDOW_CENTER_X - stage1.getwidth() / 2,
+              GAME_WINDOW_CENTER_Y - panel[1].getheight() / 2 + 30,
+              &stage1,
+              BLACK);
     update_window();
     mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
 }
@@ -631,6 +632,10 @@ void Game::fail_process() {
     put_image(GAME_WINDOW_CENTER_X - panel[0].getwidth() / 2,
               GAME_WINDOW_CENTER_Y - panel[0].getheight() / 2,
               &panel[0],
+              BLACK);
+    put_image(GAME_WINDOW_CENTER_X - stage1.getwidth() / 2,
+              GAME_WINDOW_CENTER_Y - panel[0].getheight() / 2 + 30,
+              &stage1,
               BLACK);
     update_window();
     mouse_click(0, 0, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
